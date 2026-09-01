@@ -109,6 +109,7 @@ class GroqClient:
         self.url = "https://api.groq.com/openai/v1/chat/completions"
         self.total_cost = 0.0
         self.FLASH = "llama-3.3-70b-versatile"
+        self.PRO = "llama-3.3-70b-versatile"
 
     def call(self, system_prompt: str, user_prompt: str, model_name: str = "llama-3.3-70b-versatile", temperature: float = 0.0, max_retries: int = 5) -> Dict[str, Any]:
         # Always use our own model, ignore any Gemini model names passed by stages

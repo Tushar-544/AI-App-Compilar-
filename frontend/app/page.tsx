@@ -41,7 +41,8 @@ export default function Home() {
     setError(null);
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000'}/generate/stream`, {
+      const baseUrl = (process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000').replace(/\/+$/, '');
+      const response = await fetch(`${baseUrl}/generate/stream`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt }),
@@ -59,6 +60,36 @@ export default function Home() {
       
       if (!reader) throw new Error("Failed to open stream");
 
+      const processLine = (rawLine: string) => {
+        const line = rawLine.trim();
+        if (line.startsWith("data:")) {
+          try {
+            const jsonStr = line.slice(5).trim();
+            if (!jsonStr) return;
+            const data = JSON.parse(jsonStr);
+            if (data.status === "error") throw new Error(data.detail);
+            
+            setEvents(prev => {
+              const existing = prev.find(e => e.stage === data.stage);
+              if (existing) {
+                return prev.map(e => e.stage === data.stage ? data : e);
+              }
+              return [...prev, data];
+            });
+
+            if (data.config) {
+              setResult(data.config);
+              try {
+                localStorage.setItem("compilar_preview_config", JSON.stringify(data.config));
+              } catch {}
+            }
+          } catch (parseErr: any) {
+            if (parseErr.message && !parseErr.message.includes("JSON")) throw parseErr;
+            console.warn("SSE parse skip:", parseErr);
+          }
+        }
+      };
+
       let buffer = "";
       while (true) {
         const { done, value } = await reader.read();
@@ -69,31 +100,12 @@ export default function Home() {
         buffer = lines.pop() || "";
         
         for (const line of lines) {
-          if (line.startsWith("data: ")) {
-            try {
-              const data = JSON.parse(line.slice(6));
-              if (data.status === "error") throw new Error(data.detail);
-              
-              setEvents(prev => {
-                const existing = prev.find(e => e.stage === data.stage);
-                if (existing) {
-                  return prev.map(e => e.stage === data.stage ? data : e);
-                }
-                return [...prev, data];
-              });
-
-              if (data.config) {
-                setResult(data.config);
-                try {
-                  localStorage.setItem("compilar_preview_config", JSON.stringify(data.config));
-                } catch {}
-              }
-            } catch (parseErr: any) {
-              if (parseErr.message && !parseErr.message.includes("JSON")) throw parseErr;
-              console.warn("SSE parse skip:", parseErr);
-            }
-          }
+          processLine(line);
         }
+      }
+
+      if (buffer.trim()) {
+        processLine(buffer);
       }
     } catch (e: any) {
       setError(e.message || "Something went wrong");

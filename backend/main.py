@@ -98,7 +98,15 @@ def generate_stream(req: GenerateRequest):
             logger.error(f"Streaming error: {e}")
             yield f"data: {json.dumps({'stage': 0, 'name': 'Error', 'status': 'error', 'detail': str(e)})}\n\n"
 
-    return StreamingResponse(event_stream(), media_type="text/event-stream")
+    return StreamingResponse(
+        event_stream(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",
+        },
+    )
 
 
 @app.post("/evaluate")
