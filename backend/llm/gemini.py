@@ -108,10 +108,10 @@ class GroqClient:
         self.key = os.environ.get("GROQ_API_KEY", "")
         self.url = "https://api.groq.com/openai/v1/chat/completions"
         self.total_cost = 0.0
-        self.FLASH = "llama-3.3-70b-versatile"
-        self.PRO = "llama-3.3-70b-versatile"
+        self.FLASH = "groq/compound"
+        self.PRO = "groq/compound"
 
-    def call(self, system_prompt: str, user_prompt: str, model_name: str = "llama-3.3-70b-versatile", temperature: float = 0.0, max_retries: int = 5) -> Dict[str, Any]:
+    def call(self, system_prompt: str, user_prompt: str, model_name: str = "groq/compound", temperature: float = 0.0, max_retries: int = 5) -> Dict[str, Any]:
         # Always use our own model, ignore any Gemini model names passed by stages
         model_name = self.FLASH
         headers = {"Authorization": f"Bearer {self.key}", "Content-Type": "application/json"}
