@@ -1,0 +1,54 @@
+{
+  "intent": {
+    "app_type": "CRM",
+    "app_name": "SalesPro CRM",
+    "primary_entities": ["User", "Contact", "Company", "Deal", "Task"],
+    "features": ["Authentication", "Contact Management", "Deal Pipeline", "Analytics Dashboard"],
+    "user_roles": ["Admin", "Sales Representative"],
+    "complexity": "medium",
+    "has_payments": true,
+    "has_analytics": true
+  },
+  "architecture": {
+    "pages": [
+      {"id": "dashboard", "title": "Dashboard", "route": "/"},
+      {"id": "contacts", "title": "Contacts", "route": "/contacts"},
+      {"id": "deals", "title": "Deals", "route": "/deals"}
+    ]
+  },
+  "ui_schema": {
+    "pages": [
+      {
+        "id": "p1",
+        "title": "Sales Dashboard",
+        "route": "/dashboard",
+        "layout": "sidebar",
+        "components": [
+          {"id": "c1", "type": "stats_grid", "label": "Sales Overview"},
+          {"id": "c2", "type": "chart", "label": "Revenue Trend", "api_endpoint": "analytics/revenue"}
+        ]
+      }
+    ],
+    "theme": "dark",
+    "brand_name": "SalesPro"
+  },
+  "api_schema": {
+    "base_path": "/api/v1",
+    "endpoints": [
+      {"id": "get_contacts", "method": "GET", "path": "/contacts", "auth_required": true},
+      {"id": "create_deal", "method": "POST", "path": "/deals", "auth_required": true}
+    ]
+  },
+  "db_schema": {
+    "db_type": "PostgreSQL",
+    "tables": [
+      {"name": "contacts", "columns": [{"name": "id", "type": "UUID", "primary_key": true}, {"name": "name", "type": "VARCHAR"}]},
+      {"name": "deals", "columns": [{"name": "id", "type": "UUID", "primary_key": true}, {"name": "amount", "type": "DECIMAL"}]}
+    ]
+  },
+  "auth_schema": {
+    "strategy": "JWT",
+    "roles": ["Admin", "User"],
+    "default_role": "User"
+  }
+}
