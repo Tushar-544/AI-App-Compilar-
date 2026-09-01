@@ -80,7 +80,7 @@ class GeminiClient:
                     end = raw.rfind("}")
                     if start != -1 and end != -1:
                         raw = raw[start:end+1]
-                data = json.loads(raw)
+                data = json.loads(raw, strict=False)
                 cost = self._calc_cost(response, model_name)
                 self.total_cost += cost
                 return data
@@ -108,10 +108,10 @@ class GroqClient:
         self.key = os.environ.get("GROQ_API_KEY", "")
         self.url = "https://api.groq.com/openai/v1/chat/completions"
         self.total_cost = 0.0
-        self.FLASH = "groq/compound"
-        self.PRO = "groq/compound"
+        self.FLASH = "groq/compound-mini"
+        self.PRO = "groq/compound-mini"
 
-    def call(self, system_prompt: str, user_prompt: str, model_name: str = "groq/compound", temperature: float = 0.0, max_retries: int = 5) -> Dict[str, Any]:
+    def call(self, system_prompt: str, user_prompt: str, model_name: str = "groq/compound-mini", temperature: float = 0.0, max_retries: int = 5) -> Dict[str, Any]:
         # Always use our own model, ignore any Gemini model names passed by stages
         model_name = self.FLASH
         headers = {"Authorization": f"Bearer {self.key}", "Content-Type": "application/json"}
@@ -153,7 +153,7 @@ class GroqClient:
                     est_output_tokens = response_len // 4
                     self.total_cost += (est_input_tokens * 0.05 + est_output_tokens * 0.08) / 1_000_000
 
-                    return json.loads(content)
+                    return json.loads(content, strict=False)
             except Exception as e:
                 error_str = str(e)
                 logger.warning(f"Groq error attempt {attempt+1}: {error_str}")

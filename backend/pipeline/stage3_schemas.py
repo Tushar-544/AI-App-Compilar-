@@ -66,7 +66,6 @@ def run(
             logger.warning(f"Stage 3 attempt {attempt} failed: {e}")
             if attempt == max_retries:
                 raise
-            import time
             time.sleep(2 * attempt)
 
     ms = int((time.time() - t0) * 1000)
